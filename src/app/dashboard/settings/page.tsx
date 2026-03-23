@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
-import { Camera, Globe, MapPin, Building, FileText } from "lucide-react";
+import { Camera, Globe, MapPin, Building, FileText, Wallet } from "lucide-react";
 import { updateOrganization } from "./actions";
+import WalletConnect from "@/components/WalletConnect";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -22,6 +23,13 @@ export default async function SettingsPage() {
         .single();
       org = orgData;
     }
+  }
+
+  // Fetch user profile for wallet address
+  let userProfile = null;
+  if (user) {
+    const { data } = await supabase.from("users").select("wallet_address").eq("id", user.id).single();
+    userProfile = data;
   }
 
   return (
@@ -150,6 +158,22 @@ export default async function SettingsPage() {
             Save Changes
           </button>
         </div>
+
+        {/* --- NEW WEB3 IDENTITY SECTION --- */}
+        <div className="bg-white border border-black/10 rounded-xl p-6 md:p-8 shadow-sm space-y-6 mt-8">
+          <div>
+            <h3 className="font-bold text-xl text-black flex items-center">
+              <Wallet size={20} className="mr-2 text-black/40" />
+              Web3 Identity
+            </h3>
+            <p className="text-sm text-black/60 mt-1">Connect your Rialo-compatible wallet to mint your ecosystem reputation and vote on-chain.</p>
+          </div>
+          
+          <div className="pt-2 border-t border-black/5">
+            <WalletConnect existingAddress={userProfile?.wallet_address} />
+          </div>
+        </div>
+        {/* --------------------------------- */}
 
       </form>
     </div>

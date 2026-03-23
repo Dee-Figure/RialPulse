@@ -46,3 +46,25 @@ export async function updateOrganization(formData: FormData) {
   // 3. Refresh the page so the new data instantly shows up
   revalidatePath("/dashboard/settings");
 }
+
+export async function connectWalletAddress(walletAddress: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Unauthorized");
+
+  // Save the wallet address to the user's profile
+  const { error } = await supabase
+    .from("users")
+    .update({ wallet_address: walletAddress })
+    .eq("id", user.id);
+
+  if (error) {
+    console.error("Wallet link error:", error);
+    throw new Error("Failed to link wallet");
+  }
+
+  // Refresh both pages so the UI updates instantly
+  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/quests");
+}
