@@ -81,7 +81,7 @@ export default async function LoginPage({
               formAction={signup}
               className="w-full h-12 flex items-center justify-center rounded-md border border-black/20 bg-transparent text-black font-medium transition-colors hover:bg-black/5 hover:border-black/40 active:scale-[0.98]"
             >
-              Create Organization
+              Sign Up
             </button>
           </div>
         </form>
