@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2, Info, Lock, ChevronRight } from "lucide-react";
-import { castVote } from "./actions";
+import { submitVote } from "./actions";
 
 export default async function VotePage({
   params,
@@ -16,28 +16,24 @@ export default async function VotePage({
   // 1. Fetch the Campaign
   const { data: campaign } = await supabase
     .from("campaigns")
-    .select("id, title, description, status, is_public, organizations(name)")
-    .eq("share_token", token)
+    .select("id, title, description, status, is_public, organizations(name), options")
+    .eq("id", token)
     .single();
 
   if (!campaign) notFound();
 
-  // 2. Fetch the dynamic options for this campaign
-  const { data: options } = await supabase
-    .from("campaign_options")
-    .select("id, option_text")
-    .eq("campaign_id", campaign.id)
-    .order("created_at", { ascending: true });
+  // Fallback to empty array if no options exist
+  const votingOptions = campaign.options || [];
 
   // 3. Check if the user is logged in, and if they have already voted
   const { data: { user } } = await supabase.auth.getUser();
   let existingVote = null;
 
   if (user) {
-    // Notice we fetch the joined campaign_options table to get the text they voted for
+    // Fetch the existing vote
     const { data: ballot } = await supabase
       .from("ballots")
-      .select("created_at, campaign_options(option_text)")
+      .select("created_at, selected_option")
       .eq("campaign_id", campaign.id)
       .eq("user_id", user.id)
       .single();
@@ -95,8 +91,7 @@ export default async function VotePage({
             <p className="text-sm text-green-700 mt-2">
               You voted for: <br/>
               <span className="font-bold text-lg block mt-1">
-                {/* @ts-ignore - Supabase join typing can be tricky here */}
-                {existingVote.campaign_options?.option_text}
+                {existingVote.selected_option}
               </span>
             </p>
             <p className="text-xs text-green-600/70 mt-3">
@@ -104,24 +99,36 @@ export default async function VotePage({
             </p>
           </div>
         ) : (
-          <form action={castVote} className="space-y-3">
+          <form action={submitVote} className="space-y-6">
+            {/* Hidden input to pass the campaign ID to the server action */}
             <input type="hidden" name="token" value={token} />
-            
-            {/* Dynamically Loop Through Custom Options */}
-            {options?.map((opt) => (
-              <button
-                key={opt.id}
-                type="submit"
-                name="option_id"
-                value={opt.id}
-                className="group relative flex w-full items-center justify-between overflow-hidden rounded-xl border border-black/10 bg-white p-5 text-left transition-all hover:border-black hover:bg-black/5 hover:shadow-md active:scale-[0.99]"
-              >
-                <span className="font-bold text-lg text-black">{opt.option_text}</span>
-                <div className="h-8 w-8 rounded-full bg-black/5 flex items-center justify-center text-black/40 group-hover:bg-black group-hover:text-white transition-colors">
-                  <ChevronRight size={18} />
-                </div>
-              </button>
-            ))}
+
+            <div className="space-y-3">
+              {/* 2. Map through the dynamic array to create the choices */}
+              {votingOptions.map((option: string, index: number) => (
+                <label 
+                  key={index} 
+                  className="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:border-black has-[:checked]:bg-black/5 has-[:checked]:ring-1 has-[:checked]:ring-black"
+                >
+                  <input 
+                    type="radio" 
+                    name="selectedOption" // All radio buttons must share the same name
+                    value={option}        // The value sent to the database
+                    required
+                    className="w-5 h-5 text-black border-gray-300 focus:ring-black" 
+                  />
+                  <span className="ml-3 font-medium text-gray-900">{option}</span>
+                </label>
+              ))}
+            </div>
+
+            <button 
+              type="submit"
+              className="w-full py-4 bg-black text-[#ebe6dd] rounded-xl font-bold text-lg hover:bg-zinc-800 transition-colors flex justify-center items-center"
+            >
+              <CheckCircle2 className="mr-2" size={20} />
+              Cast My Vote
+            </button>
           </form>
         )}
       </div>

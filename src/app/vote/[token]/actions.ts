@@ -3,7 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function castVote(formData: FormData) {
+export async function submitVote(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -12,24 +12,23 @@ export async function castVote(formData: FormData) {
   }
 
   const token = formData.get("token") as string;
-  const optionId = formData.get("option_id") as string; // Fetch the specific option they clicked
+  const selectedOption = formData.get("selectedOption") as string; // Fetch the selected option text
 
-  // 1. Get the campaign ID from the share token
+  // 1. Get the campaign from the token (which is now the campaign ID)
   const { data: campaign } = await supabase
     .from("campaigns")
     .select("id")
-    .eq("share_token", token)
+    .eq("id", token)
     .single();
 
   if (!campaign) throw new Error("Campaign not found.");
 
-  // 2. Cast the vote with the new option_id
+  // 2. Cast the vote with the selected option
   const { error } = await supabase.from("ballots").insert([
     {
       campaign_id: campaign.id,
       user_id: user.id,
-      option_id: optionId, // Save the dynamic choice
-      weight_used: 1, 
+      selected_option: selectedOption, // Save the selected option text
     }
   ]);
 

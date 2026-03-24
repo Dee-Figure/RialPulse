@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Users, CheckCircle2, XCircle, Activity } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 
 export default async function CampaignDetailsPage({
   params,
@@ -12,28 +12,40 @@ export default async function CampaignDetailsPage({
   const campaignId = resolvedParams.id;
   const supabase = await createClient();
 
-  // 1. Fetch the campaign details
+  // Grab the currently logged-in user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // 1. Fetch the campaign
   const { data: campaign } = await supabase
     .from("campaigns")
     .select("*")
     .eq("id", campaignId)
     .single();
 
-  if (!campaign) notFound();
-
-  // 2. Fetch all ballots cast for this campaign
+  // 2. Fetch all the votes (ballots) for this specific campaign
   const { data: ballots } = await supabase
     .from("ballots")
-    .select("choice, weight_used")
+    .select("selected_option")
     .eq("campaign_id", campaignId);
 
-  // 3. Calculate Results
-  const totalVotes = ballots?.length || 0;
-  const yesVotes = ballots?.filter((b) => b.choice === true).length || 0;
-  const noVotes = ballots?.filter((b) => b.choice === false).length || 0;
+  if (!campaign) notFound();
 
-  const yesPercentage = totalVotes > 0 ? Math.round((yesVotes / totalVotes) * 100) : 0;
-  const noPercentage = totalVotes > 0 ? Math.round((noVotes / totalVotes) * 100) : 0;
+  // 3. The Counting Engine
+  const totalVotes = ballots?.length || 0;
+  
+  // Initialize an object with all options set to 0 votes
+  const voteResults: Record<string, number> = {};
+  const options = campaign.options || [];
+  options.forEach((opt: string) => {
+    voteResults[opt] = 0;
+  });
+
+  // Tally up the actual votes
+  ballots?.forEach((ballot) => {
+    if (ballot.selected_option && voteResults[ballot.selected_option] !== undefined) {
+      voteResults[ballot.selected_option] += 1;
+    }
+  });
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -55,58 +67,57 @@ export default async function CampaignDetailsPage({
         </div>
       </div>
 
-      {/* Secret Share Link Card */}
-      <div className="bg-black/5 border border-black/10 rounded-xl p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div>
-          <h3 className="font-bold text-black">Public Voting Link</h3>
-          <p className="text-sm text-black/60">Share this link with your community to collect votes.</p>
+      {/* --- SECURE ADMIN LINK BLOCK --- */}
+      {/* This ONLY renders if the person viewing the page is the person who created it */}
+      {user?.id === campaign.created_by && (
+        <div className="bg-[#e5e3db] p-4 rounded-xl flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
+          <div>
+            <h3 className="font-bold text-black">Public Voting Link</h3>
+            <p className="text-sm text-gray-600">Share this link with your community to collect votes.</p>
+          </div>
+          <div className="bg-white px-4 py-3 rounded-md border font-mono text-sm text-black break-all select-all">
+            {/* This fixes the localhost issue by checking for your Vercel URL dynamically */}
+            {process.env.NEXT_PUBLIC_SITE_URL || 'https://rial-pulse.vercel.app'}/vote/{campaign.id}
+          </div>
         </div>
-        <div className="bg-white border border-black/10 rounded-md px-4 py-2 text-sm font-mono text-black/80 select-all w-full sm:w-auto truncate max-w-xs">
-          localhost:3000/vote/{campaign.share_token}
+      )}
+      {/* ------------------------------- */}
+
+      {/* --- DYNAMIC RESULTS SECTION --- */}
+      <div className="mt-8 bg-white border rounded-2xl p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-6 pb-4 border-b">
+          <h3 className="text-xl font-bold text-black">Live Results</h3>
+          <div className="bg-black/5 px-3 py-1 rounded-full text-sm font-bold text-black">
+            {totalVotes} Total Votes
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {Object.entries(voteResults).map(([optionName, voteCount]) => {
+            // Calculate the percentage (safeguard against dividing by zero)
+            const percentage = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
+
+            return (
+              <div key={optionName} className="space-y-2">
+                <div className="flex justify-between text-sm font-bold text-gray-800">
+                  <span>{optionName}</span>
+                  <span>{voteCount} votes ({percentage}%)</span>
+                </div>
+                
+                {/* The Progress Bar Track */}
+                <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                  {/* The Fill */}
+                  <div 
+                    className="h-full bg-black rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${percentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-
-      {/* Live Results Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        {/* Total Turnout */}
-        <div className="bg-white border border-black/10 rounded-xl p-6 shadow-sm flex flex-col justify-between h-40">
-          <div className="flex justify-between items-start">
-            <span className="text-black/60 font-bold uppercase tracking-wider text-sm">Total Turnout</span>
-            <Users className="text-black/40" size={20} />
-          </div>
-          <span className="text-5xl font-heading font-bold text-black">{totalVotes}</span>
-        </div>
-
-        {/* YES Votes */}
-        <div className="bg-white border border-black/10 rounded-xl p-6 shadow-sm flex flex-col justify-between h-40">
-           <div className="flex justify-between items-start">
-            <span className="text-black/60 font-bold uppercase tracking-wider text-sm">Yes Votes</span>
-            <CheckCircle2 className="text-green-500" size={20} />
-          </div>
-          <div>
-            <span className="text-4xl font-heading font-bold text-black">{yesVotes}</span>
-            <div className="w-full bg-black/5 rounded-full h-2 mt-3">
-              <div className="bg-green-500 h-2 rounded-full" style={{ width: `${yesPercentage}%` }}></div>
-            </div>
-          </div>
-        </div>
-
-        {/* NO Votes */}
-        <div className="bg-white border border-black/10 rounded-xl p-6 shadow-sm flex flex-col justify-between h-40">
-           <div className="flex justify-between items-start">
-            <span className="text-black/60 font-bold uppercase tracking-wider text-sm">No Votes</span>
-            <XCircle className="text-red-500" size={20} />
-          </div>
-          <div>
-            <span className="text-4xl font-heading font-bold text-black">{noVotes}</span>
-            <div className="w-full bg-black/5 rounded-full h-2 mt-3">
-              <div className="bg-red-500 h-2 rounded-full" style={{ width: `${noPercentage}%` }}></div>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      {/* -------------------------------- */}
     </div>
   );
 }

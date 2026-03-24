@@ -1,90 +1,47 @@
-import Link from "next/link";
-import { login, signup } from "./actions";
+"use client";
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ message: string }>;
-}) {
-  const params = await searchParams;
+import { createClient } from "@/utils/supabase/client";
+
+export default function LoginPage() {
+  const supabase = createClient();
+
+  const loginWithDiscord = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "discord",
+      options: {
+        // This tells Supabase where to redirect the user AFTER they click "Authorize" in Discord
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-rialo-cream p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-[#ebe6dd] p-4 relative overflow-hidden">
 
       {/* Subtle Background Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#0000000a_1px,transparent_1px),linear-gradient(to_bottom,#0000000a_1px,transparent_1px)] bg-size-[24px_24px]"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#0000000a_1px,transparent_1px),linear-gradient(to_bottom,#0000000a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
 
       <div className="w-full max-w-md bg-white border border-black/10 rounded-xl shadow-xl p-8 relative z-10">
 
         <div className="mb-8 text-center">
-          <Link href="/" className="font-heading text-2xl font-bold tracking-tighter text-black inline-block mb-2 hover:opacity-70 transition-opacity">
+          <div className="font-heading text-2xl font-bold tracking-tighter text-black inline-block mb-2">
             Rialo Pulse
-          </Link>
+          </div>
           <h1 className="text-xl font-medium text-black/80">Organization Portal</h1>
           <p className="text-sm text-black/50 mt-1">Sign in to manage your ecosystem</p>
         </div>
 
-        <form className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-black/70" htmlFor="email">
-              Work Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="admin@organization.com"
-              required
-              className="w-full px-4 py-3 rounded-md border border-black/10 bg-black/5 text-black placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black/30 transition-all"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-black/70" htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              required
-              className="w-full px-4 py-3 rounded-md border border-black/10 bg-black/5 text-black placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black/30 transition-all"
-            />
-          </div>
-
-          {/* Error / Success Messages */}
-          {params?.message && (
-            <div className="p-3 bg-black/5 text-black/80 text-sm font-medium rounded-md text-center border border-black/10">
-              {params.message}
-            </div>
-          )}
-
-          <div className="pt-4 space-y-3">
-            <button
-              formAction={login}
-              className="w-full h-12 flex items-center justify-center rounded-md bg-black text-rialo-cream font-medium transition-all hover:bg-zinc-800 active:scale-[0.98]"
-            >
-              Sign In
-            </button>
-
-            <div className="relative py-2">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-black/10" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-black/40 font-medium">Or</span>
-              </div>
-            </div>
-
-            <button
-              formAction={signup}
-              className="w-full h-12 flex items-center justify-center rounded-md border border-black/20 bg-transparent text-black font-medium transition-colors hover:bg-black/5 hover:border-black/40 active:scale-[0.98]"
-            >
-              Sign Up
-            </button>
-          </div>
-        </form>
+        <div className="space-y-4">
+          <button
+            onClick={loginWithDiscord}
+            className="w-full h-12 flex items-center justify-center space-x-3 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-md font-medium transition-colors active:scale-[0.98]"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+            </svg>
+            <span>Sign in with Discord</span>
+          </button>
+        </div>
 
       </div>
     </div>

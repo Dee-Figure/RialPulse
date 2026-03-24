@@ -12,18 +12,36 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  // Extract Discord name and avatar
+  // Prioritize Discord's 'global_name' (Display Name) over the raw username
+  const discordName = 
+    user.user_metadata?.global_name || 
+    user.user_metadata?.custom_claims?.global_name || 
+    user.user_metadata?.full_name || 
+    "Web3 Citizen";
+  const avatarUrl = user.user_metadata?.avatar_url;
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-heading font-bold text-black tracking-tight">Overview</h1>
-          <p className="text-black/60 mt-1">
-            Welcome back, <span className="font-medium text-black">{user.email}</span>
-          </p>
+        <div className="flex items-center space-x-4">
+          {avatarUrl && (
+            <img
+              src={avatarUrl}
+              alt="Discord Avatar"
+              className="w-12 h-12 rounded-full border-2 border-black/10"
+            />
+          )}
+          <div>
+            <h1 className="text-3xl md:text-4xl font-heading font-bold text-black tracking-tight">Overview</h1>
+            <p className="text-black/60 mt-1">
+              Welcome back, <span className="font-bold text-black">{discordName}</span>
+            </p>
+          </div>
         </div>
-        <button className="flex items-center justify-center space-x-2 bg-black text-rialo-cream px-5 py-2.5 rounded-md font-medium hover:bg-zinc-800 transition-all shadow-sm hover:shadow-md active:scale-95">
+        <button className="flex items-center justify-center space-x-2 bg-black text-[#ebe6dd] px-5 py-2.5 rounded-md font-medium hover:bg-zinc-800 transition-all shadow-sm hover:shadow-md active:scale-95">
           <Plus size={18} />
           <span>New Campaign</span>
         </button>
