@@ -1,13 +1,25 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { signOut } from "./actions";
 import NavLinks from "./nav-links"; // <-- Import the new component
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+
+  // 1. Check for the user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // 2. THE FIX: If there is no user, instantly kick them back to the login/home page
+  if (!user) {
+    redirect("/login"); // Redirect to login page if not authenticated
+  }
+
   return (
     <div className="min-h-screen bg-rialo-cream flex flex-col md:flex-row font-sans">
 
