@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
 
 export const metadata: Metadata = {
-  title: "Rialo Pulse | Ecosystem Governance",
+  title: "RialPulse | Ecosystem Governance",
   description: "Enterprise-grade governance and voting infrastructure for the Rialo ecosystem.",
 icons: {
   icon: '/logo.svg',
