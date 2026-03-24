@@ -54,7 +54,7 @@ export default function Home() {
         {/* Modern Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
           <Link 
-            href="/dashboard" 
+            href="/login" 
             className="group relative flex h-14 items-center justify-center overflow-hidden rounded-full bg-black px-8 font-medium text-[#ebe6dd] transition-all hover:scale-105 active:scale-95 shadow-lg shadow-black/20"
           >
             Launch Platform
