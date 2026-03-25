@@ -28,7 +28,8 @@ export async function submitVote(formData: FormData) {
     {
       campaign_id: campaign.id,
       user_id: user.id,
-      selected_option: selectedOption, // Save the selected option text
+      selected_option: selectedOption, 
+      weight_used: 1 // Save the selected option text
     }
   ]);
 
