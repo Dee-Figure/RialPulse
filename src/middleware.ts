@@ -32,6 +32,12 @@ export async function middleware(request: NextRequest) {
   // Check the auth status
   const { data: { user } } = await supabase.auth.getUser();
 
+  // 2. THE VIP PASS: If the user is trying to access a vote page, 
+  // let them through immediately! DO NOT REDIRECT THEM.
+  if (request.nextUrl.pathname.startsWith('/vote')) {
+    return supabaseResponse;
+  }
+
   // Protect the dashboard route
   if (request.nextUrl.pathname.startsWith('/dashboard') && !user) {
     return NextResponse.redirect(new URL('/login', request.url));
