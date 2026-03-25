@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2, Info, Lock, ChevronRight } from "lucide-react";
+import DiscordVerifyButton from "@/components/DiscordVerifyButton";
 import { submitVote, unlockCampaign } from "./actions";
 
 export default async function VotePage({
@@ -27,6 +28,7 @@ export default async function VotePage({
   const votingOptions = campaign.options || [];
 
   // 3. Check if the user is logged in, and if they have already voted
+  const { data: { user } } = await supabase.auth.getUser();
   const cookieStore = await cookies();
   const isUnlocked = cookieStore.get(`unlocked_${token}`)?.value === "true";
   
@@ -38,6 +40,22 @@ export default async function VotePage({
   const isLocked = hasPassword && !isUnlocked;
 
   let existingVote = null;
+
+  if (user) {
+    const { data: ballot } = await supabase
+      .from("ballots")
+      .select("created_at, selected_option")
+      .eq("campaign_id", campaign.id)
+      .eq("user_id", user.id)
+      .single();
+
+    existingVote = ballot;
+  } else if (anonymousVoteReceipt) {
+    existingVote = {
+      selected_option: anonymousVoteReceipt,
+      created_at: new Date().toISOString(),
+    };
+  }
 
   if (anonymousVoteReceipt) {
     // 👇 2. If anonymous but they have a receipt, trigger the success screen!
@@ -76,6 +94,19 @@ export default async function VotePage({
             <h3 className="font-medium text-black">Voting is closed</h3>
             <p className="text-sm text-black/50 mt-1">This campaign is no longer accepting new ballots.</p>
           </div>
+
+  
+        ) : !user ? (
+          <div className="bg-black text-[#ebe6dd] rounded-xl p-8 text-center shadow-lg">
+            <Lock className="mx-auto mb-4 text-[#ebe6dd]/60" size={32} />
+            <h3 className="text-xl font-heading font-bold mb-2">Authentication Required</h3>
+            <p className="text-[#ebe6dd]/70 mb-6 max-w-sm mx-auto">
+              To prevent duplicate votes, you must verify your identity to participate in this campaign.
+            </p>
+            <DiscordVerifyButton token={token} />
+          </div>
+
+      
         ) : existingVote ? (
           <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
             <CheckCircle2 className="mx-auto mb-2 text-green-600" size={32} />

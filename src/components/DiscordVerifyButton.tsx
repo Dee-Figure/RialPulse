@@ -6,16 +6,16 @@ export default function DiscordVerifyButton({ token }: { token: string }) {
   const supabase = createClient();
 
   const handleVerify = async () => {
-    // 1. We lock the return path into local storage right here on the vote page
+    // 1. Write the Sticky Note (Save the exact voting page link to memory)
     if (typeof window !== "undefined") {
       localStorage.setItem("voteReturnPath", `/vote/${token}`);
     }
 
-    // 2. We initiate the login and explicitly force the callback to return here
+    // 2. Send them to Discord with a clean, parameter-free URL
     await supabase.auth.signInWithOAuth({
       provider: "discord",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/vote/${token}`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
   };
@@ -23,9 +23,9 @@ export default function DiscordVerifyButton({ token }: { token: string }) {
   return (
     <button
       onClick={handleVerify}
-      className="inline-flex h-12 items-center justify-center rounded-md bg-white text-black px-8 font-bold transition-all hover:bg-zinc-200 active:scale-95"
+      className="inline-flex h-12 items-center justify-center rounded-md bg-[#5865F2] text-white px-8 font-bold transition-all hover:bg-[#4752C4] active:scale-95 mt-4"
     >
-      Verify & Log In
+      Verify with Discord
     </button>
   );
 }

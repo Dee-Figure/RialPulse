@@ -7,17 +7,18 @@ export default function VoteRedirector() {
   const router = useRouter();
 
   useEffect(() => {
-    // 1. Check if the user has a hidden voting ticket
+    // 1. Check their pocket for the sticky note
     const returnPath = localStorage.getItem("voteReturnPath");
     
-    if (returnPath && returnPath !== "/dashboard") {
-      // 2. Delete it so they don't get stuck in a loop later
+    // 2. If it exists AND it's a vote page, teleport them!
+    if (returnPath && returnPath.startsWith("/vote/")) {
+      // Throw the sticky note away so it doesn't loop forever
       localStorage.removeItem("voteReturnPath");
       
-      // 3. Teleport them instantly to the locked campaign!
+      // Instantly push them to the password screen
       router.push(returnPath);
     }
   }, [router]);
 
-  return null; // This component renders nothing on the screen
+  return null; // This component is completely invisible
 }
