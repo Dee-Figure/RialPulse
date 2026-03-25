@@ -55,6 +55,16 @@ export default async function NewCampaignPage() {
             ></textarea>
           </div>
 
+          <div>
+            <label className="block text-sm font-bold text-gray-800 mb-2">Voting Password (Optional)</label>
+            <input
+              type="text"
+              name="voting_password"
+              placeholder="Leave blank for a public campaign"
+              className="w-full border rounded-md px-3 py-2 focus:outline-none focus:border-black"
+            />
+          </div>
+
           {/* Date Selection Block */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -137,7 +147,7 @@ export default async function NewCampaignPage() {
           <div className="pt-6">
             <button
               type="submit"
-              className="w-full sm:w-auto flex items-center justify-center px-8 py-3 bg-black text-[#ebe6dd] font-medium rounded-md hover:bg-zinc-800 transition-all active:scale-[0.98]"
+              className="w-full sm:w-auto flex items-center justify-center px-8 py-3 bg-black text-rialo-cream font-medium rounded-md hover:bg-zinc-800 transition-all active:scale-[0.98]"
             >
               Launch Campaign
             </button>

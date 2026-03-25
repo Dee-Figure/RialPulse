@@ -21,9 +21,11 @@ export async function createCampaign(formData: FormData) {
   // 1. Grab and format the dates (if the user provided them)
   const startDateInput = formData.get("start_date") as string;
   const endDateInput = formData.get("end_date") as string;
+  const votingPassword = formData.get("voting_password") as string;
   
   const start_date = startDateInput ? new Date(startDateInput).toISOString() : null;
   const end_date = endDateInput ? new Date(endDateInput).toISOString() : null;
+  const voting_password = votingPassword ? votingPassword : null;
 
   const { data: existingMember } = await supabase
     .from("organization_members")
@@ -41,6 +43,7 @@ export async function createCampaign(formData: FormData) {
       description,
       start_date: start_date,
       end_date: end_date,
+      voting_password: voting_password,
       is_public: isPublic,
       status: "ACTIVE",
       options: optionsArray
