@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
 import { createCampaign } from "../actions";
 import { createClient } from "@/utils/supabase/server";
+import DynamicOptions from "./DynamicOptions";
 
 export default async function NewCampaignPage() {
   const supabase = await createClient();
@@ -54,22 +55,40 @@ export default async function NewCampaignPage() {
             ></textarea>
           </div>
 
-          {/* --- NEW OPTIONS BLOCK --- */}
+          {/* Date Selection Block */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="start_date" className="text-sm font-bold text-black block">
+                Start Time (Optional)
+              </label>
+              <input
+                type="datetime-local"
+                id="start_date"
+                name="start_date"
+                className="w-full px-4 py-3 rounded-md border border-black/10 bg-black/5 text-black focus:outline-none focus:ring-2 focus:ring-black/20 transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="end_date" className="text-sm font-bold text-black block">
+                End Time (Optional)
+              </label>
+              <input
+                type="datetime-local"
+                id="end_date"
+                name="end_date"
+                className="w-full px-4 py-3 rounded-md border border-black/10 bg-black/5 text-black focus:outline-none focus:ring-2 focus:ring-black/20 transition-all"
+              />
+            </div>
+          </div>
+
+          {/* --- DYNAMIC OPTIONS BLOCK --- */}
           <div className="space-y-2">
-            <label htmlFor="options" className="text-sm font-bold text-black block">
+            <label className="text-sm font-bold text-black block">
               Voting Options <span className="text-red-500">*</span>
             </label>
-            <textarea
-              id="options"
-              name="options"
-              required
-              rows={4}
-              placeholder="Doe&#10;Musa&#10;Sulaiman"
-              className="w-full px-4 py-3 rounded-md border border-black/10 bg-black/5 text-black placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-black/20 transition-all resize-none leading-relaxed"
-            ></textarea>
-            <p className="text-xs text-black/50 font-medium">Enter each option on a new line.</p>
+            <DynamicOptions />
           </div>
-          {/* ------------------------- */}
+          {/* -------------------------------- */}
 
 
           

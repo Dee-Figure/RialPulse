@@ -18,6 +18,13 @@ export async function createCampaign(formData: FormData) {
   // Example output: ["Marketing Budget", "Dev Grant", "Treasury Hold"]
   const optionsArray = formData.getAll("options") as string[];
 
+  // 1. Grab and format the dates (if the user provided them)
+  const startDateInput = formData.get("start_date") as string;
+  const endDateInput = formData.get("end_date") as string;
+  
+  const start_date = startDateInput ? new Date(startDateInput).toISOString() : null;
+  const end_date = endDateInput ? new Date(endDateInput).toISOString() : null;
+
   const { data: existingMember } = await supabase
     .from("organization_members")
     .select("org_id")
@@ -25,17 +32,29 @@ export async function createCampaign(formData: FormData) {
     .limit(1)
     .single();
 
-  const orgId = existingMember?.org_id;
-  if (!orgId) throw new Error("Organization required.");
-
-  // Insert Campaign
+  // 2. Insert into the database
   const { data: newCampaign, error: campaignError } = await supabase
     .from("campaigns")
-    .insert([{ org_id: orgId, title, description, is_public: isPublic, status: "ACTIVE", options: optionsArray }])
-    .select("id")
+    .insert({
+      created_by: user.id,
+      title,
+      description,
+      start_date: start_date,
+      end_date: end_date,
+      is_public: isPublic,
+      status: "ACTIVE",
+      options: optionsArray
+    })
+    .select()
     .single();
 
-  if (campaignError || !newCampaign) return redirect("/dashboard/campaigns?error=Failed");
+  // Error handling to catch and throw database errors
+  if (campaignError) {
+    console.error("SUPABASE INSERT ERROR:", campaignError);
+    throw new Error(`Database Error: ${campaignError.message}`);
+  }
+
+  if (!newCampaign) return redirect("/dashboard/campaigns?error=Failed");
 
 
 

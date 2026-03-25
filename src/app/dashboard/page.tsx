@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { Activity, Plus, Users, Vote } from "lucide-react";
@@ -41,10 +42,10 @@ export default async function DashboardPage() {
             </p>
           </div>
         </div>
-        <button className="flex items-center justify-center space-x-2 bg-black text-[#ebe6dd] px-5 py-2.5 rounded-md font-medium hover:bg-zinc-800 transition-all shadow-sm hover:shadow-md active:scale-95">
+        <Link href="/dashboard/campaigns" className="flex items-center justify-center space-x-2 bg-black text-[#ebe6dd] px-5 py-2.5 rounded-md font-medium hover:bg-zinc-800 transition-all shadow-sm hover:shadow-md active:scale-95">
           <Plus size={18} />
           <span>New Campaign</span>
-        </button>
+        </Link>
       </div>
 
       {/* Stats Grid */}
