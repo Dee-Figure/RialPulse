@@ -27,27 +27,12 @@ export default async function VotePage({
   const votingOptions = campaign.options || [];
 
   // 3. Check if the user is logged in, and if they have already voted
-  const { data: { user } } = await supabase.auth.getUser();
-  let existingVote = null;
-
   const cookieStore = await cookies();
   const isUnlocked = cookieStore.get(`unlocked_${token}`)?.value === "true";
 
   // A campaign is locked ONLY if it has a password AND the user hasn't unlocked it yet
   const hasPassword = campaign.voting_password !== null && campaign.voting_password !== "";
   const isLocked = hasPassword && !isUnlocked;
-
-  if (user) {
-    // Fetch the existing vote
-    const { data: ballot } = await supabase
-      .from("ballots")
-      .select("created_at, selected_option")
-      .eq("campaign_id", campaign.id)
-      .eq("user_id", user.id)
-      .single();
-    
-    existingVote = ballot;
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-rialo-cream p-4 relative overflow-hidden font-sans">
@@ -79,28 +64,13 @@ export default async function VotePage({
             <p className="text-sm text-black/50 mt-1">This campaign is no longer accepting new ballots.</p>
           </div>
 
-        ) : !user || user.app_metadata.provider !== 'discord' ? (
-          
-          <div className="bg-black text-rialo-cream rounded-xl p-8 text-center shadow-lg">
-            <Lock className="mx-auto mb-4 text-rialo-cream/60" size={32} />
-            <h3 className="text-xl font-heading font-bold mb-2">Authentication Required</h3>
-            <p className="text-rialo-cream/70 mb-6 max-w-sm mx-auto">
-              To prevent duplicate votes, you must verify your identity to participate in this campaign.
-            </p>
-            <a 
-              href={`/login?next=/vote/${token}`}
-              className="inline-flex h-12 items-center justify-center rounded-md bg-white text-black px-8 font-bold transition-all hover:bg-zinc-200 active:scale-95"
-            >
-              Verify & Log In
-            </a>
-          </div>
-
+        {/* 👇 Check if it requires a password (NO DISCORD CHECK!) */}
         ) : isLocked ? (
           <div className="bg-white rounded-xl p-8 text-center border shadow-lg">
             <Lock className="mx-auto mb-4 text-black/60" size={32} />
             <h3 className="text-xl font-bold mb-2">Campaign Locked</h3>
             <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-              You are verified! Now, please enter the campaign password to view the voting options.
+              Please enter the campaign password to view the voting options.
             </p>
             <form action={unlockCampaign} className="space-y-4">
               <input type="hidden" name="token" value={token} />
@@ -120,27 +90,12 @@ export default async function VotePage({
             </form>
           </div>
 
-        ) : existingVote ? (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-            <CheckCircle2 className="mx-auto mb-2 text-green-600" size={32} />
-            <h3 className="font-bold text-green-900 text-lg">Your vote is secured</h3>
-            <p className="text-sm text-green-700 mt-2">
-              You voted for: <br/>
-              <span className="font-bold text-lg block mt-1">
-                {existingVote?.selected_option}
-              </span>
-            </p>
-            <p className="text-xs text-green-600/70 mt-3">
-              Recorded on {new Date(existingVote?.created_at ?? "").toLocaleString()}
-            </p>
-          </div>
+        {/* 👇 If it's active and unlocked, just let them vote! */}
         ) : (
           <form action={submitVote} className="space-y-6">
-            {/* Hidden input to pass the campaign ID to the server action */}
             <input type="hidden" name="token" value={token} />
-
+            
             <div className="space-y-3">
-              {/* 2. Map through the dynamic array to create the choices */}
               {votingOptions.map((option: string, index: number) => (
                 <label 
                   key={index} 
@@ -148,8 +103,8 @@ export default async function VotePage({
                 >
                   <input 
                     type="radio" 
-                    name="selectedOption" // All radio buttons must share the same name
-                    value={option}        // The value sent to the database
+                    name="selectedOption"
+                    value={option}
                     required
                     className="w-5 h-5 text-black border-gray-300 focus:ring-black" 
                   />

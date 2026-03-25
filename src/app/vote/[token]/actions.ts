@@ -6,12 +6,6 @@ import { revalidatePath } from "next/cache";
 
 export async function submitVote(formData: FormData) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  
-  if (!user || user.app_metadata.provider !== 'discord') {
-    throw new Error("You must verify your identity with Discord to vote.");
-  }
 
   const token = formData.get("token") as string;
   const selectedOption = formData.get("selectedOption") as string; // Fetch the selected option text
@@ -25,25 +19,25 @@ export async function submitVote(formData: FormData) {
 
   if (!campaign) throw new Error("Campaign not found.");
 
-  // 2. Cast the vote with the selected option
+  // 2. Generate a temporary user ID for anonymous voting
+  const tempUserId = crypto.randomUUID();
+
+  // 3. Cast the vote with the selected option using temporary user ID
   const { error } = await supabase.from("ballots").insert([
     {
       campaign_id: campaign.id,
-      user_id: user.id,
+      user_id: tempUserId,
       selected_option: selectedOption, 
       weight_used: 1 // Save the selected option text
     }
   ]);
 
-  
-
-  // To this:
   if (error) {
     console.error("Voting error:", error);
     throw new Error(`Failed to cast vote: ${error.message}`);
   }
 
-  // 3. Refresh the page to show their recorded vote
+  // 4. Refresh the page to show their recorded vote
   revalidatePath(`/vote/${token}`);
 }
 
