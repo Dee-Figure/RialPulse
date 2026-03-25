@@ -38,12 +38,12 @@ export async function createCampaign(formData: FormData) {
   const { data: newCampaign, error: campaignError } = await supabase
     .from("campaigns")
     .insert({
-      created_by: user.id,
-      title,
-      description,
+      created_by: user.id,          // <--- THIS IS REQUIRED FOR THE SECURITY CHECK
+      title: formData.get("title"),
+      description: formData.get("description"),
       start_date: start_date,
       end_date: end_date,
-      voting_password: voting_password,
+      voting_password: formData.get("voting_password") || null,
       is_public: isPublic,
       status: "ACTIVE",
       options: optionsArray

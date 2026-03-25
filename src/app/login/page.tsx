@@ -14,7 +14,7 @@ export default function LoginPage() {
     await supabase.auth.signInWithOAuth({
       provider: "discord",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${nextPath}`,
       },
     });
   };
