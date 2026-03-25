@@ -6,14 +6,15 @@ export default function LoginPage() {
   const supabase = createClient();
 
   const loginWithDiscord = async () => {
-    // 1. Get the path from the URL
     const urlParams = new URLSearchParams(window.location.search);
     const nextPath = urlParams.get("next") || "/dashboard";
 
-    // 2. THE FIX: Save it in a browser cookie for 1 hour before leaving!
-    document.cookie = `returnPath=${nextPath}; path=/; max-age=3600;`;
+    // 1. THE WORKAROUND: Save the destination in the browser's permanent memory
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("voteReturnPath", nextPath);
+    }
 
-    // 3. Send them to Discord with a clean, parameter-free return URL
+    // 2. Send them to Discord with a normal, clean callback URL
     await supabase.auth.signInWithOAuth({
       provider: "discord",
       options: {

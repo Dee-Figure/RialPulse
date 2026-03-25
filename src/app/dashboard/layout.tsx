@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { signOut } from "./actions";
 import NavLinks from "./nav-links"; // <-- Import the new component
+import VoteRedirector from "@/components/VoteRedirector";
 
 export default async function DashboardLayout({
   children,
@@ -22,6 +23,8 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-rialo-cream flex flex-col md:flex-row font-sans">
+      {/* 2. Drop the invisible interceptor here */}
+      <VoteRedirector />
 
       <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-black/10 bg-rialo-cream p-6 flex flex-col justify-between shrink-0">
         <div>
