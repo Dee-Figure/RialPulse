@@ -88,7 +88,7 @@ export default async function VotePage({
               To prevent duplicate votes, you must verify your identity to participate in this campaign.
             </p>
             <Link 
-              href="/login" 
+              href={`/login?next=/vote/${token}`} // <--- THIS IS THE MAGIC LINE
               className="inline-flex h-12 items-center justify-center rounded-md bg-white text-black px-8 font-bold transition-all hover:bg-zinc-200 active:scale-95"
             >
               Verify & Log In

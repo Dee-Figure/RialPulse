@@ -6,11 +6,15 @@ export default function LoginPage() {
   const supabase = createClient();
 
   const loginWithDiscord = async () => {
+    // 1. Check if the URL has a ?next= parameter, otherwise default to /dashboard
+    const urlParams = new URLSearchParams(window.location.search);
+    const nextPath = urlParams.get("next") || "/dashboard";
+
+    // 2. Tell Supabase to redirect to your callback route, AND pass the nextPath along
     await supabase.auth.signInWithOAuth({
       provider: "discord",
       options: {
-        // This tells Supabase where to redirect the user AFTER they click "Authorize" in Discord
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       },
     });
   };
