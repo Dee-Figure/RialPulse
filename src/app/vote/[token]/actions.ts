@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export async function submitVote(formData: FormData) {
   const supabase = await createClient();
@@ -19,16 +20,13 @@ export async function submitVote(formData: FormData) {
 
   if (!campaign) throw new Error("Campaign not found.");
 
-  // 2. Generate a temporary user ID for anonymous voting
-  const tempUserId = crypto.randomUUID();
-
-  // 3. Cast the vote with the selected option using temporary user ID
+  // 2. Cast the vote with null user_id for anonymous voting
   const { error } = await supabase.from("ballots").insert([
     {
       campaign_id: campaign.id,
-      user_id: tempUserId,
+      user_id: null,
       selected_option: selectedOption, 
-      weight_used: 1 // Save the selected option text
+      weight_used: 1
     }
   ]);
 
@@ -58,10 +56,8 @@ export async function unlockCampaign(formData: FormData) {
     // If correct, set a cookie to unlock the page
     const cookieStore = await cookies();
     cookieStore.set(`unlocked_${token}`, "true");
+    revalidatePath(`/vote/${token}`);
   } else {
-    throw new Error("Incorrect password. Please try again.");
+    redirect(`/vote/${token}?error=incorrect_password`);
   }
-
-  // Refresh the page to show the voting options
-  revalidatePath(`/vote/${token}`);
 }
