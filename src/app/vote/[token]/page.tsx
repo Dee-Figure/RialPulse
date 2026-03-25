@@ -87,12 +87,12 @@ export default async function VotePage({
             <p className="text-rialo-cream/70 mb-6 max-w-sm mx-auto">
               To prevent duplicate votes, you must verify your identity to participate in this campaign.
             </p>
-            <Link 
-              href={`/login?next=/vote/${token}`} // <--- THIS IS THE MAGIC LINE
+            <a 
+              href={`/login?next=/vote/${token}`}
               className="inline-flex h-12 items-center justify-center rounded-md bg-white text-black px-8 font-bold transition-all hover:bg-zinc-200 active:scale-95"
             >
               Verify & Log In
-            </Link>
+            </a>
           </div>
 
         ) : isLocked ? (
