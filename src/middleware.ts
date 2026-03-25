@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
   // 2. THE VIP PASS: If the user is trying to access a vote page, 
   // let them through immediately! DO NOT REDIRECT THEM.
   if (request.nextUrl.pathname.startsWith('/vote')) {
-    return supabaseResponse;
+    return NextResponse.next();
   }
 
   // Protect the dashboard route
