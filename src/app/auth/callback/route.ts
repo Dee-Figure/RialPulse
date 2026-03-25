@@ -1,30 +1,40 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? "/dashboard";
+  
+  // 1. THE FIX: Check the browser's cookies for our saved return ticket!
+  const cookieStore = await cookies();
+  const savedPath = cookieStore.get("returnPath")?.value;
+  
+  // Use the URL param if it survived, otherwise use the cookie, otherwise dashboard
+  const next = searchParams.get('next') ?? savedPath ?? "/dashboard";
 
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
+    
     if (!error) {
-      const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
+      const forwardedHost = request.headers.get("x-forwarded-host"); 
       const isLocalEnv = process.env.NODE_ENV === "development";
       
+      let response;
       if (isLocalEnv) {
-        // We can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-        return NextResponse.redirect(`${origin}${next}`);
+        response = NextResponse.redirect(`${origin}${next}`);
       } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`);
+        response = NextResponse.redirect(`https://${forwardedHost}${next}`);
       } else {
-        return NextResponse.redirect(`${origin}${next}`);
+        response = NextResponse.redirect(`${origin}${next}`);
       }
+
+      // 2. THE CLEANUP: Delete the temporary cookie now that we are done with it
+      response.cookies.delete("returnPath");
+      return response;
     }
   }
 
-  // return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }
