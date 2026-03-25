@@ -39,7 +39,11 @@ export async function submitVote(formData: FormData) {
   const cookieStore = await cookies();
   cookieStore.set(`voted_${token}`, selectedOption);
 
+  // 1. Refresh the vote page so the voter sees the green screen
   revalidatePath(`/vote/${token}`);
+  
+  // 2. THE FIX: Refresh the entire dashboard layout so the creator sees the new stats!
+  revalidatePath('/dashboard', 'layout');
 }
 
 export async function unlockCampaign(formData: FormData) {
