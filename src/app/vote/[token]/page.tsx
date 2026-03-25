@@ -63,8 +63,6 @@ export default async function VotePage({
             <h3 className="font-medium text-black">Voting is closed</h3>
             <p className="text-sm text-black/50 mt-1">This campaign is no longer accepting new ballots.</p>
           </div>
-
-        {/* 👇 Check if it requires a password (NO DISCORD CHECK!) */}
         ) : isLocked ? (
           <div className="bg-white rounded-xl p-8 text-center border shadow-lg">
             <Lock className="mx-auto mb-4 text-black/60" size={32} />
@@ -90,7 +88,6 @@ export default async function VotePage({
             </form>
           </div>
 
-        {/* 👇 If it's active and unlocked, just let them vote! */}
         ) : (
           <form action={submitVote} className="space-y-6">
             <input type="hidden" name="token" value={token} />
