@@ -32,10 +32,13 @@ export async function submitVote(formData: FormData) {
 
   if (error) {
     console.error("Voting error:", error);
-    throw new Error(`Failed to cast vote: ${error.message}`);
+    redirect(`/vote/${token}?error=voting_failed`);
   }
 
-  // 4. Refresh the page to show their recorded vote
+  // 👇 NEW: Leave a "Vote Receipt" in the browser's cookies
+  const cookieStore = await cookies();
+  cookieStore.set(`voted_${token}`, selectedOption);
+
   revalidatePath(`/vote/${token}`);
 }
 

@@ -29,10 +29,23 @@ export default async function VotePage({
   // 3. Check if the user is logged in, and if they have already voted
   const cookieStore = await cookies();
   const isUnlocked = cookieStore.get(`unlocked_${token}`)?.value === "true";
+  
+  // 👇 1. Check if they have a vote receipt
+  const anonymousVoteReceipt = cookieStore.get(`voted_${token}`)?.value;
 
   // A campaign is locked ONLY if it has a password AND the user hasn't unlocked it yet
   const hasPassword = campaign.voting_password !== null && campaign.voting_password !== "";
   const isLocked = hasPassword && !isUnlocked;
+
+  let existingVote = null;
+
+  if (anonymousVoteReceipt) {
+    // 👇 2. If anonymous but they have a receipt, trigger the success screen!
+    existingVote = {
+      selected_option: anonymousVoteReceipt,
+      created_at: new Date().toISOString(), // Just shows current time for the receipt
+    };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-rialo-cream p-4 relative overflow-hidden font-sans">
@@ -62,6 +75,20 @@ export default async function VotePage({
             <Info className="mx-auto mb-2 text-black/50" size={24} />
             <h3 className="font-medium text-black">Voting is closed</h3>
             <p className="text-sm text-black/50 mt-1">This campaign is no longer accepting new ballots.</p>
+          </div>
+        ) : existingVote ? (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+            <CheckCircle2 className="mx-auto mb-2 text-green-600" size={32} />
+            <h3 className="font-bold text-green-900 text-lg">Your vote is secured</h3>
+            <p className="text-sm text-green-700 mt-2">
+              You voted for: <br/>
+              <span className="font-bold text-lg block mt-1">
+                {existingVote?.selected_option}
+              </span>
+            </p>
+            <p className="text-xs text-green-600/70 mt-3">
+              Recorded on {new Date(existingVote?.created_at ?? "").toLocaleString()}
+            </p>
           </div>
         ) : isLocked ? (
           <div className="bg-white rounded-xl p-8 text-center border shadow-lg">
