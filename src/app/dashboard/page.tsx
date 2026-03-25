@@ -3,6 +3,10 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { Activity, Plus, Users, Vote } from "lucide-react";
 
+// 👇 THE CACHE KILLERS: Force this page to ALWAYS fetch fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function DashboardPage() {
   const supabase = await createClient();
 
@@ -13,8 +17,49 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  // ==========================================
+  // 👇 X-RAY LOGS: FETCH THE REAL STATS
+  // ==========================================
+
+  // 1. Count Active Campaigns
+  const { count: activeCampaignsCount, error: campaignError } = await supabase
+    .from("campaigns")
+    .select("*", { count: "exact", head: true })
+    .eq("created_by", user.id)
+    .eq("status", "ACTIVE");
+  if (campaignError) console.error("🚨 Campaign Error:", campaignError);
+
+  // 2. Count Voting Circles
+  const { count: votingCirclesCount, error: circlesError } = await supabase
+    .from("voting-circles")
+    .select("*", { count: "exact", head: true })
+    .eq("created_by", user.id);
+  if (circlesError) console.error("🚨 Circles Error:", circlesError);
+
+  // 3. Count Total Votes
+  const { data: userCampaigns, error: fetchCampaignsError } = await supabase
+    .from("campaigns")
+    .select("id")
+    .eq("created_by", user.id);
+  if (fetchCampaignsError) console.error("🚨 Fetch Campaigns Error:", fetchCampaignsError);
+
+  const campaignIds = userCampaigns?.map(c => c.id) || [];
+
+  let totalVotesCount = 0;
+  if (campaignIds.length > 0) {
+    const { count, error: votesError } = await supabase
+      .from("ballots")
+      .select("*", { count: "exact", head: true })
+      .in("campaign_id", campaignIds);
+    if (votesError) console.error("🚨 Votes Error:", votesError);
+    totalVotesCount = count || 0;
+  }
+
+  console.log("📊 DASHBOARD STATS FOR USER:", user.id);
+  console.log("Campaigns:", activeCampaignsCount, "| Circles:", votingCirclesCount, "| Votes:", totalVotesCount);
+  console.log("Campaign IDs found:", campaignIds);
+
   // Extract Discord name and avatar
-  // Prioritize Discord's 'global_name' (Display Name) over the raw username
   const discordName = 
     user.user_metadata?.global_name || 
     user.user_metadata?.custom_claims?.global_name || 
@@ -55,7 +100,7 @@ export default async function DashboardPage() {
             <span className="text-black/60 font-medium">Active Campaigns</span>
             <Vote className="text-black/40" size={20} />
           </div>
-          <span className="text-3xl font-heading font-bold text-black">0</span>
+          <span className="text-3xl font-heading font-bold text-black">{activeCampaignsCount || 0}</span>
         </div>
 
         <div className="bg-white border border-black/10 p-6 rounded-xl shadow-sm flex flex-col justify-between h-32">
@@ -63,7 +108,7 @@ export default async function DashboardPage() {
             <span className="text-black/60 font-medium">Voting Circles</span>
             <Users className="text-black/40" size={20} />
           </div>
-          <span className="text-3xl font-heading font-bold text-black">0</span>
+          <span className="text-3xl font-heading font-bold text-black">{votingCirclesCount || 0}</span>
         </div>
 
         <div className="bg-white border border-black/10 p-6 rounded-xl shadow-sm flex flex-col justify-between h-32">
@@ -71,7 +116,7 @@ export default async function DashboardPage() {
             <span className="text-black/60 font-medium">Total Votes Cast</span>
             <Activity className="text-black/40" size={20} />
           </div>
-          <span className="text-3xl font-heading font-bold text-black">0</span>
+          <span className="text-3xl font-heading font-bold text-black">{totalVotesCount || 0}</span>
         </div>
       </div>
 
