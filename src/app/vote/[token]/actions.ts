@@ -7,8 +7,9 @@ export async function submitVote(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    throw new Error("You must be logged in to vote.");
+  // 👇 STRIKE DOWN ANONYMOUS USERS:
+  if (!user || user.app_metadata.provider !== 'discord') {
+    throw new Error("You must verify your identity with Discord to vote.");
   }
 
   const token = formData.get("token") as string;

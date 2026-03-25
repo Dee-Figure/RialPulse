@@ -70,7 +70,9 @@ export default async function VotePage({
             <h3 className="font-medium text-black">Voting is closed</h3>
             <p className="text-sm text-black/50 mt-1">This campaign is no longer accepting new ballots.</p>
           </div>
-        ) : !user ? (
+
+        ) : !user || user.app_metadata.provider !== 'discord' ? (
+          
           <div className="bg-black text-[#ebe6dd] rounded-xl p-8 text-center shadow-lg">
             <Lock className="mx-auto mb-4 text-[#ebe6dd]/60" size={32} />
             <h3 className="text-xl font-heading font-bold mb-2">Authentication Required</h3>
