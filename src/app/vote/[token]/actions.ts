@@ -32,7 +32,13 @@ export async function submitVote(formData: FormData) {
     }
   ]);
 
-  if (error) console.error("Voting error:", error);
+  
+
+  // To this:
+  if (error) {
+    console.error("Voting error:", error);
+    throw new Error(`Failed to cast vote: ${error.message}`);
+  }
 
   // 3. Refresh the page to show their recorded vote
   revalidatePath(`/vote/${token}`);
