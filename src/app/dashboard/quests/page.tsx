@@ -1,8 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
-import { Trophy, CheckCircle2, Hexagon, Zap, Shield, ArrowRight } from "lucide-react";
-import { claimQuest } from "./actions";
+import { Trophy, CheckCircle2, Hexagon, Zap, Shield } from "lucide-react";
+import ClaimButton from "./ClaimButton";
 
-// The hardcoded list of available quests
 const QUESTS = [
   { id: "profile_setup", title: "Complete Profile", description: "Add your organization details and avatar.", points: 10, icon: Shield },
   { id: "first_campaign", title: "Deploy Campaign", description: "Launch your first voting event on RialPulse.", points: 25, icon: Zap },
@@ -14,7 +13,6 @@ export default async function QuestsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Fetch the user's reputation stats
   let reputationPoints = 0;
   let claimedQuests: string[] = [];
 
@@ -52,7 +50,7 @@ export default async function QuestsPage() {
         </div>
       </div>
 
-      {/* The V2 Mainnet Teaser (Only shows if all quests are done) */}
+      {/* The V2 Mainnet Teaser */}
       {allClaimed && (
         <div className="bg-gradient-to-r from-yellow-100 to-amber-50 border border-yellow-200 rounded-xl p-6 md:p-8 flex items-start space-x-4 animate-in zoom-in duration-500">
           <div className="bg-yellow-400 rounded-full p-2 shrink-0">
@@ -99,15 +97,7 @@ export default async function QuestsPage() {
                     Claimed
                   </button>
                 ) : (
-                  <form action={claimQuest}>
-                    <input type="hidden" name="questId" value={quest.id} />
-                    <input type="hidden" name="points" value={quest.points} />
-                    {/* For the hackathon, we make the button claimable directly to show the UX */}
-                    <button type="submit" className="w-full py-2.5 rounded-md bg-black text-[#ebe6dd] font-bold text-sm hover:bg-zinc-800 transition-colors flex items-center justify-center group active:scale-[0.98]">
-                      Verify & Claim
-                      <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </form>
+                  <ClaimButton questId={quest.id} points={quest.points} />
                 )}
               </div>
             </div>

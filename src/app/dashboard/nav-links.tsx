@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Vote, Settings, Trophy } from "lucide-react";
+import { LayoutDashboard, Users, Vote, Settings, Trophy, Globe } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -17,6 +17,7 @@ export default function NavLinks() {
   const links = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "Campaigns", href: "/dashboard/campaigns", icon: Vote },
+    { name: "Explore", href: "/dashboard/explore", icon: Globe },
     { name: "Voting Circles", href: "/dashboard/circles", icon: Users },
     { name: "Reputation", href: "/dashboard/quests", icon: Trophy },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },

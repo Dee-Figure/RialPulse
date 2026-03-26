@@ -11,7 +11,8 @@ export async function createCampaign(formData: FormData) {
 
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
-  const isPublic = formData.get("is_public") === "on";
+  const visibilityChoice = (formData.get("visibility") as string) || "private";
+  const isPublic = visibilityChoice === "public";
   const circleId = formData.get("circle_id") as string;
   
   // MAGIC TRICK: This grabs every input field named "options" and creates an array

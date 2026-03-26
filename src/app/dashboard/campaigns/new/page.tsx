@@ -144,6 +144,43 @@ export default async function NewCampaignPage() {
             </div>
           </div>
 
+          {/* 👇 NEW: Campaign Visibility Options */}
+          <div className="space-y-3 mb-8">
+            <label className="font-medium text-black text-lg">Campaign Visibility</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="flex items-start p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:border-black has-[:checked]:bg-black/5 has-[:checked]:ring-1 has-[:checked]:ring-black">
+                <input
+                  type="radio"
+                  name="visibility"
+                  value="private"
+                  defaultChecked
+                  className="mt-1 w-4 h-4 text-black border-gray-300 focus:ring-black"
+                />
+                <div className="ml-3">
+                  <span className="block font-medium text-gray-900">Private (Unlisted)</span>
+                  <span className="block text-sm text-gray-500 mt-1">
+                    Only people with the exact link can see and vote on this campaign.
+                  </span>
+                </div>
+              </label>
+
+              <label className="flex items-start p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:border-black has-[:checked]:bg-black/5 has-[:checked]:ring-1 has-[:checked]:ring-black">
+                <input
+                  type="radio"
+                  name="visibility"
+                  value="public"
+                  className="mt-1 w-4 h-4 text-black border-gray-300 focus:ring-black"
+                />
+                <div className="ml-3">
+                  <span className="block font-medium text-gray-900">Public</span>
+                  <span className="block text-sm text-gray-500 mt-1">
+                    Anyone on the app can discover and vote on this campaign.
+                  </span>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <div className="pt-6">
             <button
               type="submit"
