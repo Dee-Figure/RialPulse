@@ -2,7 +2,7 @@
 
 
 **The Web2.5 Governance & Proof of Participation Platform.**
-Built for the Rialo Ecosystem Hackathon.
+Built for the Rialo Ecosystem.
 
 RialPulse is a trustless,fully auditable voting platform designed to enhance genuine community participation while defending against Sybil attacks. RialPulse eliminate Web3 onboarding barriers by combining frictionless Discord authentication with native wallet recognition,allowing anyone to securely make their voice heard. 
 
